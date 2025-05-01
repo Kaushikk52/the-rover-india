@@ -1,200 +1,75 @@
 "use client";
 
-import {
-  Menu,
-  LogOut,
-  User,
-  HospitalIcon,
-  ShieldPlus,
-  Accessibility,
-  Ambulance,
-  Activity,
-  ChevronDown,
-  ChevronUp,
-  PlusCircle,
-  Edit,
-  ClipboardPlus,
-} from "lucide-react";
-import { FaClinicMedical } from "react-icons/fa";
-import { MdOutlineMedicalInformation } from "react-icons/md";
-import { useEffect, useState } from "react";
-// import { useNavigate, Link, useLocation } from "react-router-dom";
-import { useRouter } from "next/router";
+import { useSidebar } from "@/context/SidebarContext";
+import { X } from "lucide-react";
+import clsx from "clsx";
+import { FaRegUser } from "react-icons/fa";
+import { PiSignOut } from "react-icons/pi";
 import Link from "next/link";
+import { sidebarTags } from "@/constants/canstants";
 
-function Sidebar() {
-  // const location = useLocation();
-  //   const navigate = useNavigate();
-
-  const [isOpen, setIsOpen] = useState(true);
-  const [isMobile, setIsMobile] = useState(false);
-  const [isPostingOpen, setIsPostingOpen] = useState(false);
-  const [isEditingOpen, setIsEditingOpen] = useState(false);
-
-  const [currentUser, setCurrentUser] = useState({ userId: "", role: "" });
-
-  const navItems = [
-    { icon: HospitalIcon, label: "Blogs", href: "/dashboard/blog" },
-    {
-      icon: FaClinicMedical,
-      label: "Visual Stories",
-      href: "/dashboard/visual-stories",
-    },
-    { icon: ShieldPlus, label: "Bank", href: "/dashboard/bank" },
-    { icon: Accessibility, label: "Homecare", href: "/dashboard/homecare" },
-    { icon: Ambulance, label: "Transport", href: "/dashboard/transport" },
-    {
-      icon: MdOutlineMedicalInformation,
-      label: "Orthotics & Prosthetics",
-      href: "/dashboard/op",
-    },
-    { icon: Activity, label: "Diagnostics", href: "/dashboard/diagnostics" },
-    { icon: ClipboardPlus, label: "Centers", href: "/dashboard/center" },
-  ];
-
-  useEffect(() => {
-    const checkScreenSize = () => {
-      setIsMobile(window.innerWidth < 768);
-      setIsOpen(window.innerWidth >= 768);
-    };
-
-    checkScreenSize();
-    window.addEventListener("resize", checkScreenSize);
-
-    return () => window.removeEventListener("resize", checkScreenSize);
-  }, []);
-
-  function handleLogout() {
-    localStorage.removeItem("token");
-    // navigate("/");
-  }
-
-  const toggleSidebar = () => {
-    if (!isMobile) setIsOpen(!isOpen);
-  };
+export default function Sidebar() {
+  const { isOpen, closeSidebar } = useSidebar();
 
   return (
-    <div
-      className={`flex flex-col bg-white text-gray-800 border-r transition-all duration-300 ${
-        isOpen ? "w-64" : "w-24"
-      } ${isMobile ? "w-24" : ""}`}
-    >
-      {/* Sidebar Toggle Button */}
-      <div className="p-4">
-        <button
-          className={`text-gray-800 hover:bg-gray-100 p-2 rounded-md ${
-            isMobile ? "hidden" : ""
-          }`}
-          onClick={toggleSidebar}
-        >
-          <Menu className="h-6 w-6" />
-          <span className="sr-only">Toggle sidebar</span>
-        </button>
-      </div>
+    <>
+      {/* BACKDROP */}
+      <div
+        className={clsx(
+          "fixed inset-0 bg-opacity-40 transition-opacity duration-300 z-20",
+          isOpen ? "opacity-100 visible" : "opacity-0 invisible"
+        )}
+        onClick={closeSidebar}
+      />
 
-      {/* Navigation */}
-      <nav className="flex-grow overflow-y-auto">
-        <ul className="space-y-2 p-4">
-          {/* Posting Section */}
-          <li>
-            <button
-              className="flex items-center justify-between text-gray-800 hover:bg-gray-100 rounded-md p-2 w-full"
-              onClick={() => setIsPostingOpen(!isPostingOpen)}
-            >
-              <div className="flex items-center">
-                <PlusCircle className="h-5 w-5 flex-shrink-0" />
-                {isOpen && !isMobile && <span className="ml-2">Posting</span>}
-              </div>
-              {isPostingOpen ? (
-                <ChevronUp className="h-5 w-5" />
-              ) : (
-                <ChevronDown className="h-5 w-5" />
-              )}
+      {/* SIDEBAR */}
+      <div
+        className={clsx(
+          "fixed top-0 right-0 h-full w-[20%] bg-white shadow-lg transition-transform duration-600 z-50 flex flex-col",
+          isOpen ? "translate-x-0" : "translate-x-full"
+        )}
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Close Button */}
+        <div className="flex justify-end items-center p-4">
+          <button onClick={closeSidebar}>
+            <X size={24} />
+          </button>
+        </div>
+
+        {/* Sidebar Content */}
+        <div className="flex flex-col flex-1 px-4">
+          <div className="flex flex-col gap-8">
+            {sidebarTags.map((tag) => (
+              <Link
+                onClick={closeSidebar}
+                href={tag.path}
+                key={tag.name}
+                className="text-sm uppercase font-medium text-slate-700 hover:text-slate-800 hover:font-semibold cursor-pointer"
+              >
+                {tag.name}
+              </Link>
+            ))}
+          </div>
+          <div className="mt-auto">
+            <a className="w-full flex items-center justify-start px-4 space-x-3 text-gray-500 hover:text-gray-900">
+              <FaRegUser className="h-5 w-5" />
+              <span className="text-lg font-medium py-5 cursor-pointer">
+                Profile
+              </span>
+            </a>
+            <hr className="border" />
+            <button className="flex flex-col items-start py-4 px-4 group w-full cursor-pointer">
+              <h1 className="flex items-center text-lg font-medium text-red-500 mb-1.5">
+                <PiSignOut className="h-6 w-6 mr-2" /> Sign Out
+              </h1>
+              <p className="text-gray-500 group-hover:text-gray-900">
+                user@example.com
+              </p>
             </button>
-            {isPostingOpen && (
-              <ul className="pl-6 space-y-2">
-                {navItems.map((item, index) => (
-                  <li key={index}>
-                    <Link
-                      // to={`${item.href}/add`}
-                      //   to={`${item.href}/add`}
-                      href={`${item.href}/add`}
-                      className="flex items-center text-gray-800 hover:bg-gray-100 rounded-md p-2"
-                    >
-                      <item.icon className="h-5 w-5 flex-shrink-0" />
-                      {isOpen && !isMobile && (
-                        <span className="ml-2">Add {item.label}</span>
-                      )}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </li>
-
-          {/* Editing Section */}
-          <li>
-            <button
-              className="flex items-center justify-between text-gray-800 hover:bg-gray-100 rounded-md p-2 w-full"
-              onClick={() => setIsEditingOpen(!isEditingOpen)}
-            >
-              <div className="flex items-center">
-                <Edit className="h-5 w-5 flex-shrink-0" />
-                {isOpen && !isMobile && <span className="ml-2">Listing</span>}
-              </div>
-              {isEditingOpen ? (
-                <ChevronUp className="h-5 w-5" />
-              ) : (
-                <ChevronDown className="h-5 w-5" />
-              )}
-            </button>
-            {isEditingOpen && (
-              <ul className="pl-6 space-y-2">
-                {navItems.map((item, index) => (
-                  <li key={index}>
-                    <Link
-                      // to={`${item.href}/edit`}
-                      //   to={`${item.href}/all`}
-                      href={""}
-                      className="flex items-center text-gray-800 hover:bg-gray-100 rounded-md p-2"
-                    >
-                      <item.icon className="h-5 w-5 flex-shrink-0" />
-                      {isOpen && !isMobile && (
-                        <span className="ml-2">{item.label}</span>
-                      )}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </li>
-        </ul>
-      </nav>
-
-      {/* Logout & Account Section */}
-      <div className="p-4 space-y-2">
-        <button
-          onClick={handleLogout}
-          className={`flex items-center text-gray-800 hover:bg-gray-100 rounded-md p-2 w-full ${
-            (!isOpen || isMobile) && "justify-center"
-          }`}
-        >
-          <LogOut className="h-5 w-5 flex-shrink-0" />
-          {isOpen && !isMobile && <span className="ml-2">Logout</span>}
-        </button>
-        <Link
-          //   to={`/user/${currentUser.userId}`}
-          href={""}
-          className={`flex items-center text-gray-800 hover:bg-gray-100 rounded-md p-2 w-full ${
-            (!isOpen || isMobile) && "justify-center"
-          }`}
-        >
-          <User className="h-5 w-5 flex-shrink-0" />
-          {isOpen && !isMobile && <span className="ml-2">Account</span>}
-        </Link>
+          </div>
+        </div>
       </div>
-    </div>
+    </>
   );
 }
-
-export default Sidebar;

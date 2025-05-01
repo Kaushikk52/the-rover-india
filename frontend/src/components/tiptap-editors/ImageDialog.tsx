@@ -2,7 +2,7 @@
 
 import type React from "react";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   Dialog,
   DialogContent,
@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface ImageDialogProps {
   open: boolean;
@@ -53,6 +54,9 @@ export function ImageDialog({
     initialValues.alignment || "center"
   );
   const [caption, setCaption] = useState(initialValues.caption || "");
+  const [activeTab, setActiveTab] = useState<string>("url");
+  const [uploadedImage, setUploadedImage] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (open) {
@@ -63,8 +67,45 @@ export function ImageDialog({
       setHeight(initialValues.height || "auto");
       setAlignment(initialValues.alignment || "center");
       setCaption(initialValues.caption || "");
+      setUploadedImage(null);
+      setActiveTab("url");
     }
   }, [open, initialValues]);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Check if file is an image
+      if (!file.type.startsWith("image/")) {
+        alert("Please select an image file");
+        return;
+      }
+
+      // Create a data URL from the file
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        if (event.target?.result) {
+          setUploadedImage(event.target.result as string);
+          setSrc(event.target.result as string);
+
+          // Try to extract a good alt text from the filename
+          if (!alt) {
+            const fileName = file.name.split(".")[0];
+            // Convert kebab-case or snake_case to Title Case
+            const formattedName = fileName
+              .replace(/[-_]/g, " ")
+              .replace(
+                /\w\S*/g,
+                (txt) =>
+                  txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase()
+              );
+            setAlt(formattedName);
+          }
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -78,20 +119,64 @@ export function ImageDialog({
           <DialogTitle>Insert Image</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit}>
+          <Tabs
+            value={activeTab}
+            onValueChange={setActiveTab}
+            className="w-full"
+          >
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="url">URL</TabsTrigger>
+              <TabsTrigger value="upload">Upload</TabsTrigger>
+            </TabsList>
+            <TabsContent value="url" className="pt-4">
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="src" className="text-right">
+                  Image URL
+                </Label>
+                <Input
+                  id="src"
+                  placeholder="https://example.com/image.jpg"
+                  value={src}
+                  onChange={(e) => setSrc(e.target.value)}
+                  className="col-span-3"
+                  required={activeTab === "url"}
+                />
+              </div>
+            </TabsContent>
+            <TabsContent value="upload" className="pt-4">
+              <div className="grid gap-4">
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="file-upload" className="text-right">
+                    Choose File
+                  </Label>
+                  <div className="col-span-3">
+                    <Input
+                      id="file-upload"
+                      type="file"
+                      ref={fileInputRef}
+                      accept="image/*"
+                      onChange={handleFileChange}
+                      className="col-span-3"
+                    />
+                  </div>
+                </div>
+                {uploadedImage && (
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <Label className="text-right">Preview</Label>
+                    <div className="col-span-3">
+                      <img
+                        src={uploadedImage || "/placeholder.svg"}
+                        alt="Preview"
+                        className="max-h-40 max-w-full object-contain border rounded"
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+            </TabsContent>
+          </Tabs>
+
           <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="src" className="text-right">
-                Image URL
-              </Label>
-              <Input
-                id="src"
-                placeholder="https://example.com/image.jpg"
-                value={src}
-                onChange={(e) => setSrc(e.target.value)}
-                className="col-span-3"
-                required
-              />
-            </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="alt" className="text-right">
                 Alt Text

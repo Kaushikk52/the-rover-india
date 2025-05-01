@@ -1,13 +1,7 @@
-import Sidebar from "@/components/Sidebar";
+import Sidebar from "@/components/BlogSidebar";
 import { ReactNode } from "react";
 
-export default function AddBlogLayout({
-  children,
-  sidebar,
-}: {
-  children: ReactNode;
-  sidebar: ReactNode;
-}) {
+export default function AddBlogLayout({ children }: { children: ReactNode }) {
   return (
     <div className="flex h-auto bg-gray-100">
       <Sidebar />

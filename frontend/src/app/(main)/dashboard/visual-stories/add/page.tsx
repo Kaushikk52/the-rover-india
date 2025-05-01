@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Tooltip } from "react-tooltip";
 import axios from "axios";
 // import './AuthurBlog.css'
@@ -48,6 +48,7 @@ import {
   ListOrdered,
   X,
 } from "lucide-react";
+import React from "react";
 
 const AddBlog = () => {
   const [tags, setTags] = useState<string[]>([]);

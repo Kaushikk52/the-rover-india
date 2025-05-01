@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Tooltip } from "react-tooltip";
 import axios from "axios";
 // import './AuthurBlog.css'
@@ -52,6 +52,7 @@ import {
   Youtube,
   Square,
   Type,
+  Minus,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CustomImageExtension } from "@/lib/custom-image-extension";
@@ -68,6 +69,9 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
 import { ButtonExtension } from "@/lib/ButtonExtension";
+import { DividerExtension } from "@/lib/Divider-extension";
+import { DividerDialog } from "@/components/tiptap-editors/DividerDialog";
+import React from "react";
 
 const AddBlog = () => {
   const [tags, setTags] = useState<string[]>([]);
@@ -91,6 +95,7 @@ const AddBlog = () => {
   const [savedContent, setSavedContent] = useState<string | null>(null);
   const [wordCount, setWordCount] = useState({ words: 0, characters: 0 });
   const [imageDialogOpen, setImageDialogOpen] = useState(false);
+  const [dividerDialogOpen, setDividerDialogOpen] = useState(false);
   const [youtubeDialogOpen, setYoutubeDialogOpen] = useState(false);
   const [buttonSettings, setButtonSettings] = useState({
     text: "Button Text",
@@ -134,7 +139,7 @@ const AddBlog = () => {
   const editor = useEditor({
     extensions: [
       Placeholder.configure({
-        placeholder: "start you blog from here",
+        placeholder: "start you blog from here......",
         emptyEditorClass: "is-editor-empty",
       }),
       StarterKit,
@@ -142,6 +147,7 @@ const AddBlog = () => {
       FontFamily,
       FontSize,
       CustomImageExtension,
+      DividerExtension,
       ButtonExtension,
       YouTubeExtension,
       Sup,
@@ -195,6 +201,16 @@ const AddBlog = () => {
 
       editor.commands.setCustomImage(imageData);
       setImageDialogOpen(false);
+    },
+    [editor]
+  );
+
+  const handleDividerSubmit = useCallback(
+    (dividerData: { color: string; thickness: string }) => {
+      if (!editor) return;
+
+      editor.commands.setDivider(dividerData);
+      setDividerDialogOpen(false);
     },
     [editor]
   );
@@ -964,6 +980,19 @@ const AddBlog = () => {
                   />
                 </button>
 
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setDividerDialogOpen(true)}
+                >
+                  <Minus className="h-4 w-4" />
+                </Button>
+                <DividerDialog
+                  open={dividerDialogOpen}
+                  onOpenChange={setDividerDialogOpen}
+                  onSubmit={handleDividerSubmit}
+                />
+
                 <Popover>
                   <PopoverTrigger asChild>
                     <Button
@@ -1072,7 +1101,7 @@ const AddBlog = () => {
                       <Square className="h-4 w-4" />
                     </Button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-96">
+                  <PopoverContent className="w-96 mt-2 shadow-2xl border-none">
                     <Tabs defaultValue="content">
                       <TabsList className="grid w-full grid-cols-2">
                         <TabsTrigger value="content">Content</TabsTrigger>
@@ -1221,7 +1250,10 @@ const AddBlog = () => {
                       >
                         {buttonSettings.text}
                       </div>
-                      <Button className="w-full" onClick={addButton}>
+                      <Button
+                        className="w-full bg-blue-600 hover:bg-blue-500 text-white"
+                        onClick={addButton}
+                      >
                         Insert Button
                       </Button>
                     </div>
