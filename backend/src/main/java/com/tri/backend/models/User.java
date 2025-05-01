@@ -1,6 +1,7 @@
 package com.tri.backend.models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.tri.backend.constants.UserRole;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.UuidGenerator;
@@ -21,7 +22,7 @@ public class User extends Auditable implements UserDetails {
     @Id
     @GeneratedValue
     @UuidGenerator
-    @Column(name = "user_id", nullable = false, updatable = false, length = 36)
+    @Column(name = "id", nullable = false, updatable = false, length = 36)
     private String id;
 
     @Column(name = "token",unique = true)
@@ -36,26 +37,18 @@ public class User extends Auditable implements UserDetails {
     @Column(name = "email", nullable = false, unique = true, length = 100)
     private String email;
 
+    private String profileImg;
+
     @Column(name = "password", nullable = false)
     private String password;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Blog> blogs;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "role", nullable = false, length = 10)
     private UserRole role;
 
-    private int totalReviews;
-
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonIgnore
-    private List<Review> reviews;
-
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonIgnore
-    private List<Rating> ratings;
-
-    public enum UserRole {
-        ROLE_USER,ROLE_ADMIN
-    }
 
     @PrePersist
     private void prePersist() {
